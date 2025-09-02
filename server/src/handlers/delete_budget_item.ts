@@ -1,8 +1,28 @@
+import { db } from '../db';
+import { budgetItemsTable } from '../db/schema';
 import { type DeleteInput } from '../schema';
+import { eq } from 'drizzle-orm';
 
 export const deleteBudgetItem = async (input: DeleteInput): Promise<{ success: boolean }> => {
-  // This is a placeholder declaration! Real code should be implemented here.
-  // The goal of this handler is deleting a budget item from the database.
-  // Should ensure proper cleanup and return confirmation of deletion.
-  return Promise.resolve({ success: true });
+  try {
+    // First check if the item exists
+    const existingItems = await db.select()
+      .from(budgetItemsTable)
+      .where(eq(budgetItemsTable.id, input.id))
+      .execute();
+
+    if (existingItems.length === 0) {
+      return { success: false };
+    }
+
+    // Delete the item
+    await db.delete(budgetItemsTable)
+      .where(eq(budgetItemsTable.id, input.id))
+      .execute();
+
+    return { success: true };
+  } catch (error) {
+    console.error('Budget item deletion failed:', error);
+    throw error;
+  }
 };

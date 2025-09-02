@@ -1,20 +1,32 @@
+import { db } from '../db';
+import { guestsTable } from '../db/schema';
 import { type CreateGuestInput, type Guest } from '../schema';
 
 export const createGuest = async (input: CreateGuestInput): Promise<Guest> => {
-  // This is a placeholder declaration! Real code should be implemented here.
-  // The goal of this handler is creating a new guest and persisting it in the database.
-  // Should validate RSVP status, handle nullable fields properly, and manage plus-one information.
-  return Promise.resolve({
-    id: 0, // Placeholder ID
-    name: input.name,
-    email: input.email || null,
-    phone: input.phone || null,
-    rsvp_status: input.rsvp_status || 'pending',
-    meal_choice: input.meal_choice || null,
-    dietary_restrictions: input.dietary_restrictions || null,
-    plus_one: input.plus_one || false,
-    plus_one_name: input.plus_one_name || null,
-    notes: input.notes || null,
-    created_at: new Date() // Placeholder date
-  } as Guest);
+  try {
+    // Insert guest record
+    const result = await db.insert(guestsTable)
+      .values({
+        name: input.name,
+        email: input.email,
+        phone: input.phone,
+        rsvp_status: input.rsvp_status,
+        meal_choice: input.meal_choice,
+        dietary_restrictions: input.dietary_restrictions,
+        plus_one: input.plus_one,
+        plus_one_name: input.plus_one_name,
+        notes: input.notes
+      })
+      .returning()
+      .execute();
+
+    // Return the created guest
+    const guest = result[0];
+    return {
+      ...guest
+    };
+  } catch (error) {
+    console.error('Guest creation failed:', error);
+    throw error;
+  }
 };

@@ -1,8 +1,22 @@
+import { db } from '../db';
+import { vendorsTable } from '../db/schema';
 import { type Vendor } from '../schema';
 
 export const getVendors = async (): Promise<Vendor[]> => {
-  // This is a placeholder declaration! Real code should be implemented here.
-  // The goal of this handler is fetching all wedding vendors from the database.
-  // Should return complete vendor list with contact information and service details.
-  return [];
+  try {
+    // Fetch all vendors from the database
+    const results = await db.select()
+      .from(vendorsTable)
+      .execute();
+
+    // Convert numeric fields back to numbers before returning
+    return results.map(vendor => ({
+      ...vendor,
+      contract_amount: vendor.contract_amount ? parseFloat(vendor.contract_amount) : null,
+      deposit_paid: vendor.deposit_paid ? parseFloat(vendor.deposit_paid) : null
+    }));
+  } catch (error) {
+    console.error('Failed to fetch vendors:', error);
+    throw error;
+  }
 };
